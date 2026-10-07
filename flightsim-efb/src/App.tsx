@@ -24,7 +24,7 @@ function windParts(heading: number, wind: string) {
 }
 
 export default function App() {
-  const { flight, link, msfs, plan, weather, vatsim } = useStore();
+  const { flight, link, msfs, weather, vatsim } = useStore();
   const [screen, setScreen] = useState<Screen>("Home");
   const [role, setRole] = useState<"departure" | "arrival" | "alternate">("arrival");
   const [token, setToken] = useState(localStorage.getItem("efb-token") || "");
