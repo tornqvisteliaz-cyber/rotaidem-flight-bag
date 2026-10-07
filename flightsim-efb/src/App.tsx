@@ -3,8 +3,8 @@ import { altitudeText, apply, fuelText, setLink, useStore } from "./store";
 import { loadNotes, saveNotes } from "./notes";
 import type { Envelope } from "./protocol";
 
-const NAV = ["Home", "Flight", "Airport", "Weather", "Charts", "Performance", "Aircraft", "Documents", "Notes", "Settings"] as const;
-type Screen = (typeof NAV)[number];
+const NAV = ["Home", "Flight", "Map", "Plan", "Airport", "Weather", "Charts", "Performance", "Checklists", "Documents", "Notes", "Logbook"] as const;
+type Screen = (typeof NAV)[number] | "Tools" | "VATSIM" | "SimBrief" | "Settings";
 
 const AIRPORTS: Record<string, { name: string; city: string; elevation: number; runways: { id: string; heading: number; length: number; surface: string; approach: string }[]; freqs: [string, string][] }> = {
   ESSA: { name: "Arlanda", city: "Stockholm, Sweden", elevation: 137, runways: [{ id: "01L", heading: 10, length: 3301, surface: "Asphalt", approach: "ILS" }, { id: "19R", heading: 190, length: 3301, surface: "Asphalt", approach: "ILS" }, { id: "08", heading: 76, length: 2500, surface: "Asphalt", approach: "VOR" }, { id: "26", heading: 256, length: 2500, surface: "Asphalt", approach: "ILS" }], freqs: [["ATIS", "119.000"], ["Tower", "118.500"], ["Ground", "121.700"]] },
@@ -22,14 +22,20 @@ function Icon({ name }: { name: string }) {
   const paths: Record<string, string> = {
     Home: "M4 11.5 12 4l8 7.5V20H4z",
     Flight: "M3 13l18-6-6 14-3-5z",
-    Airport: "M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11z M12 10.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z",
+    Map: "M4 6l5-2 6 2 5-2v14l-5 2-6-2-5 2z",
+    Plan: "M6 4h12v16H6z M9 8h6 M9 12h4",
+    Airport: "M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11z",
     Weather: "M7 16h10a4 4 0 0 0 0-8 5 5 0 0 0-9.5 1.5A3.5 3.5 0 0 0 7 16z",
-    Charts: "M5 4h14v16H5z M8 15l3-4 2 2 3-5",
-    Performance: "M5 19V5 M5 19h14 M8 15l3-3 2 2 4-5",
-    Aircraft: "M4 14h16 M8 14V8h8v6",
-    Documents: "M7 3h7l4 4v14H7z M14 3v4h4",
-    Notes: "M6 4h12v16H6z M9 8h6 M9 12h6",
-    Settings: "M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z M12 3v2 M12 19v2 M3 12h2 M19 12h2",
+    Charts: "M5 4h14v16H5z",
+    Performance: "M5 19V5 M5 19h14",
+    Checklists: "M6 4h12v16H6z M9 9l2 2 4-4",
+    Documents: "M7 3h7l4 4v14H7z",
+    Notes: "M6 4h12v16H6z",
+    Logbook: "M5 4h14v16H5z M8 8h8",
+    Tools: "M5 19V5 M5 19h14",
+    VATSIM: "M5 12h14 M12 5v14",
+    SimBrief: "M6 5h12v14H6z",
+    Settings: "M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z",
   };
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -108,6 +114,13 @@ export default function App() {
             </button>
           ))}
         </nav>
+        <div className="nav" style={{ marginTop: 12 }}>
+          {(["Tools", "VATSIM", "SimBrief", "Settings"] as const).map((item) => (
+            <button key={item} type="button" aria-current={screen === item ? "page" : undefined} aria-label={item} onClick={() => setScreen(item)}>
+              <Icon name={item} /><span>{item}</span>
+            </button>
+          ))}
+        </div>
       </aside>
       <div className="column">
         <header className="toolbar">
@@ -118,13 +131,19 @@ export default function App() {
         <main className="screen">
           {screen === "Home" && <Home onOpen={setScreen} />}
           {screen === "Flight" && <Flight />}
+          {screen === "Map" && <MapView />}
+          {screen === "Plan" && <PlanView />}
           {screen === "Airport" && <Airport weather={weather} />}
           {screen === "Weather" && <Weather />}
           {screen === "Charts" && <Charts />}
           {screen === "Performance" && <Performance />}
-          {screen === "Aircraft" && <Aircraft />}
+          {screen === "Checklists" && <Checklists />}
           {screen === "Documents" && <Documents />}
           {screen === "Notes" && <Notes />}
+          {screen === "Logbook" && <Logbook />}
+          {screen === "Tools" && <Tools />}
+          {screen === "VATSIM" && <Vatsim />}
+          {screen === "SimBrief" && <SimBrief />}
           {screen === "Settings" && <Settings theme={theme} setTheme={setTheme} link={link} onForget={() => { localStorage.removeItem("efb-token"); setPaired(false); }} onSheet={setSheet} />}
         </main>
       </div>
@@ -153,6 +172,114 @@ export default function App() {
         </div>
       )}
     </div>
+  );
+}
+
+function MapView() {
+  const { flight } = useStore();
+  return (
+    <>
+      <p className="meta">North up · route schematic</p>
+      <div className="chart"><canvas id="plate" /></div>
+      <div className="group" style={{ marginTop: 12 }}>
+        <Row label="Aircraft" value={flight.flight.callsign} />
+        <Row label="Position" value={`${flight.position.latitude.toFixed(2)}  ${flight.position.longitude.toFixed(2)}`} />
+        <Row label="Track" value={String(Math.round(flight.track)).padStart(3, "0") + "°"} />
+      </div>
+      <p className="note">A licensed map provider is not connected. This view uses the live position only.</p>
+    </>
+  );
+}
+
+function PlanView() {
+  const { flight, plan } = useStore();
+  return (
+    <>
+      <p className="route">{flight.flight.departure} → {flight.flight.arrival}</p>
+      <div className="group">
+        <Row label="SID" value={plan?.sid || "Not imported"} />
+        <Row label="Route" value={plan?.route || "Import from SimBrief"} />
+        <Row label="STAR" value={plan?.star || "Not imported"} />
+        <Row label="Alternate" value={plan?.alternate || flight.flight.alternate} />
+        <Row label="Cruise" value={plan?.cruiseAltitude ? "FL" + String(Math.round(plan.cruiseAltitude / 100)).padStart(3, "0") : "FL350"} />
+      </div>
+    </>
+  );
+}
+
+function Checklists() {
+  const items = ["Parking brake set", "Fuel quantity checked", "Beacon on", "Doors closed", "Flight controls checked"];
+  const [done, setDone] = useState<Record<string, boolean>>({});
+  return (
+    <>
+      <div className="kicker">Before start</div>
+      <div className="group">
+        {items.map((item) => (
+          <button className="list-row" key={item} type="button" aria-pressed={!!done[item]} onClick={() => setDone({ ...done, [item]: !done[item] })}>
+            <span>{done[item] ? "Done" : "Open"}</span><span>{item}</span>
+          </button>
+        ))}
+      </div>
+      <p className="note">Items are not completed automatically.</p>
+    </>
+  );
+}
+
+function Logbook() {
+  const { flight } = useStore();
+  return (
+    <div className="group">
+      <Row label="7 Oct 2026" value={flight.flight.departure + " → " + flight.flight.arrival} />
+      <Row label="Aircraft" value={flight.aircraft.title} />
+      <Row label="Flight time" value={flight.flightTime} />
+      <Row label="Landing" value="Recorded after parking" />
+    </div>
+  );
+}
+
+function Tools() {
+  const [runway, setRunway] = useState("190");
+  const [wind, setWind] = useState("220");
+  const [speed, setSpeed] = useState("12");
+  const diff = ((Number(wind) - Number(runway) + 540) % 360) - 180;
+  const head = Math.round(Number(speed) * Math.cos((diff * Math.PI) / 180));
+  const cross = Math.round(Math.abs(Number(speed) * Math.sin((diff * Math.PI) / 180)));
+  return (
+    <>
+      <div className="kicker">Crosswind</div>
+      <div className="grid">
+        <label className="field">Runway heading<input value={runway} onChange={(e) => setRunway(e.target.value)} /></label>
+        <label className="field">Wind direction<input value={wind} onChange={(e) => setWind(e.target.value)} /></label>
+        <label className="field">Wind speed KT<input value={speed} onChange={(e) => setSpeed(e.target.value)} /></label>
+      </div>
+      <div className="group" style={{ marginTop: 12 }}>
+        <Row label="Headwind" value={(head >= 0 ? head : 0) + " KT"} />
+        <Row label="Tailwind" value={(head < 0 ? Math.abs(head) : 0) + " KT"} />
+        <Row label="Crosswind" value={cross + " KT"} />
+      </div>
+    </>
+  );
+}
+
+function Vatsim() {
+  const { flight, vatsim } = useStore();
+  const rows = vatsim[flight.flight.arrival] || [];
+  return (
+    <div className="group">
+      {rows.length ? rows.map((item) => <Row key={item.callsign} label={item.callsign} value={(item.frequency || "—") + "  Online"} />) : <Row label={flight.flight.arrival} value="No ATC online" />}
+    </div>
+  );
+}
+
+function SimBrief() {
+  const [pilot, setPilot] = useState("");
+  const [message, setMessage] = useState("Import uses the bridge, not the iPad.");
+  return (
+    <>
+      <label className="field">Pilot ID or username<input value={pilot} onChange={(e) => setPilot(e.target.value)} /></label>
+      <button className="primary" style={{ marginTop: 12 }} type="button" onClick={() => fetch("/api/simbrief", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pilot }) }).then((res) => res.json()).then((data) => setMessage(data.error || "Imported " + (data.flightNumber || "flight"))).catch(() => setMessage("Bridge did not answer."))}>Import latest flight</button>
+      <p className="note">{message}</p>
+    </>
   );
 }
 
