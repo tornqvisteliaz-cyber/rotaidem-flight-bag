@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.DS_Store
+bridge-config.json
+static/icon-180.png
+static/icon-512.png
