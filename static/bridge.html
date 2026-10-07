@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Rotaidem" />
+  <meta name="theme-color" content="#F2F2F7" />
+  <title>Rotaidem Flight Bag</title>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="/icon-180.png" />
+  <link rel="icon" href="/icon-180.png" />
+  <link rel="stylesheet" href="/bridge.css" />
+</head>
+<body class="bridge">
+  <main class="window">
+    <header class="window-title">FlightSim EFB</header>
+    <p class="product-line">MSFS 2024</p>
+
+    <section class="status-block">
+      <div class="status-row">
+        <span class="dot" id="msfs-dot"></span>
+        <div>
+          <div class="status-label">MSFS 2024</div>
+          <div class="status-value" id="msfs-text">Checking</div>
+        </div>
+      </div>
+      <div class="status-row">
+        <span class="dot on" id="server-dot"></span>
+        <div>
+          <div class="status-label">EFB Server</div>
+          <div class="status-value" id="server-text">Running</div>
+        </div>
+      </div>
+      <div class="status-row">
+        <span class="dot" id="ipad-dot"></span>
+        <div>
+          <div class="status-label">iPad</div>
+          <div class="status-value" id="ipad-text">Waiting</div>
+        </div>
+      </div>
+      <div class="status-row plain">
+        <div>
+          <div class="status-label">Aircraft</div>
+          <div class="status-value" id="aircraft-text">—</div>
+        </div>
+      </div>
+    </section>
+
+    <figure class="qr-wrap">
+      <img id="qr" alt="Pairing QR code" width="196" height="196" />
+      <figcaption>
+        <div>Connect iPad</div>
+        <code id="address">—</code>
+      </figcaption>
+    </figure>
+
+    <p class="open-row"><a id="open-efb" href="/">Open EFB on this computer</a></p>
+
+    <details class="settings">
+      <summary>Settings</summary>
+      <dl>
+        <div><dt>Port</dt><dd id="set-port">8080</dd></div>
+        <div><dt>Network</dt><dd id="set-ip">—</dd></div>
+        <div><dt>Provider</dt><dd id="set-provider">—</dd></div>
+        <div><dt>SimConnect</dt><dd id="set-sim">—</dd></div>
+        <div><dt>Protocol</dt><dd>1</dd></div>
+        <div><dt>Start with Windows</dt><dd>Not in this prototype</dd></div>
+      </dl>
+      <p class="hint">The bridge stays up if the iPad disconnects. Reconnecting clients receive the current flight state.</p>
+      <label class="jump">Demo phase
+        <select id="phase-jump">
+          <option value="">Follow simulation</option>
+          <option>PARKED</option>
+          <option>TAXI</option>
+          <option>TAKEOFF</option>
+          <option>CLIMB</option>
+          <option>CRUISE</option>
+          <option>DESCENT</option>
+          <option>APPROACH</option>
+          <option>LANDING</option>
+          <option>TAXI IN</option>
+        </select>
+      </label>
+      <pre id="logs" class="logs"></pre>
+    </details>
+  </main>
+  <script src="/bridge.js"></script>
+</body>
+</html>

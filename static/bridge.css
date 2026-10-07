@@ -1,0 +1,62 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body.bridge {
+  background: #d9d9d9;
+  color: #1a1a1a;
+  font-family: "Segoe UI", sans-serif;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.window {
+  width: min(400px, 100%);
+  background: #f3f3f3;
+  border: 1px solid #c8c8c8;
+  padding: 22px 22px 18px;
+}
+.window-title {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.product-line {
+  margin: 2px 0 16px;
+  color: #5c5c5c;
+  font-size: 13px;
+}
+.status-block { display: grid; gap: 10px; }
+.status-row { display: flex; gap: 10px; align-items: center; min-height: 36px; }
+.status-row.plain { padding-left: 22px; }
+.status-label { font-size: 12px; color: #5c5c5c; }
+.status-value { font-size: 15px; }
+.dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #8a8a8a; flex: none;
+}
+.dot.on { background: #1f7a34; }
+.dot.wait { background: #b86e00; }
+.dot.bad { background: #b00020; }
+.qr-wrap { margin: 18px 0 8px; display: grid; justify-items: center; gap: 8px; }
+.qr-wrap img { background: white; border: 1px solid #d0d0d0; }
+.qr-wrap figcaption { text-align: center; font-size: 13px; }
+.qr-wrap code { display: block; margin-top: 4px; font-family: Consolas, ui-monospace, monospace; font-size: 13px; }
+.open-row { text-align: center; margin: 8px 0 14px; font-size: 13px; }
+.open-row a { color: #1a1a1a; }
+.settings { border-top: 1px solid #d5d5d5; padding-top: 10px; }
+.settings summary { cursor: pointer; font-size: 13px; }
+.settings dl { margin: 10px 0; }
+.settings dl div { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; padding: 4px 0; }
+.settings dt { color: #5c5c5c; }
+.settings dd { margin: 0; text-align: right; }
+.hint { font-size: 12px; color: #5c5c5c; line-height: 1.4; }
+.jump { display: grid; gap: 4px; font-size: 12px; color: #5c5c5c; margin: 8px 0; }
+.jump select { font: inherit; color: #1a1a1a; padding: 4px; }
+.logs {
+  margin: 8px 0 0;
+  max-height: 120px;
+  overflow: auto;
+  font-size: 11px;
+  line-height: 1.35;
+  color: #333;
+  white-space: pre-wrap;
+}

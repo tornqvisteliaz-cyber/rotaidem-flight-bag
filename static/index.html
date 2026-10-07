@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Rotaidem" />
+  <meta name="theme-color" content="#F2F2F7" id="theme-color" />
+  <title>Rotaidem</title>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="/icon-180.png" />
+  <link rel="icon" href="/icon-180.png" />
+  <link rel="stylesheet" href="/app.css" />
+</head>
+<body data-link="down" data-phase="CRUISE">
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand"><strong>Rotaidem</strong><span>Flight Bag</span></div>
+      <nav class="nav" id="nav">
+        <button data-screen="home" aria-current="page">Home</button>
+        <button data-screen="flight">Flight</button>
+        <button data-screen="airport">Airport</button>
+        <button data-screen="weather">Weather</button>
+        <button data-screen="charts">Charts</button>
+        <button data-screen="performance">Performance</button>
+        <button data-screen="aircraft">Aircraft</button>
+        <button data-screen="documents">Documents</button>
+        <button data-screen="notes">Notes</button>
+        <button data-screen="traffic">Traffic</button>
+      </nav>
+      <div class="spacer"></div>
+      <button class="settings-btn" data-screen="settings">Settings</button>
+      <div class="link-status">
+        <div><i class="pip" id="pip-msfs"></i><span id="side-msfs">MSFS</span></div>
+        <div><i class="pip" id="pip-bridge"></i><span id="side-bridge">Bridge</span></div>
+      </div>
+    </aside>
+    <div class="main">
+      <div class="stale-bar"><i class="pip bad"></i><span id="stale-text">MSFS disconnected</span></div>
+
+      <section class="screen active" id="screen-home">
+        <h1 class="screen-title">Home</h1>
+        <div class="kicker">Flight</div>
+        <div class="group">
+          <div class="route-block">
+            <div class="route">
+              <h2><span data-bind="depIata">ARN</span> → <span data-bind="arrIata">BKK</span></h2>
+              <span class="flightno" data-bind="flight.flightNumber">SK123</span>
+            </div>
+            <div class="route-sub"><span data-bind="aircraft.title">Fenix A320</span> · <span data-bind="aircraft.registration">SE-ROA</span></div>
+          </div>
+          <div class="ruler">
+            <div class="ruler-ends"><span data-bind="flight.departure">ESSA</span><span data-bind="flight.arrival">VTBS</span></div>
+            <div class="ruler-track"><i id="route-pip"></i></div>
+            <div class="ruler-meta"><span class="phase-line" data-bind="phase">CRUISE</span><span data-bind="distanceRemainingText">—</span></div>
+          </div>
+          <div class="row"><span class="label">Status</span><span class="value" data-bind="phaseLabel">Cruise</span></div>
+          <div class="row"><span class="label">Altitude</span><span class="value" data-bind="altitudeText">—</span></div>
+          <div class="row"><span class="label">Ground speed</span><span class="value" data-bind="gsText">—</span></div>
+          <div class="row"><span class="label">Fuel</span><span class="value" data-bind="fuelText">—</span></div>
+          <div class="row"><span class="label">ETA</span><span class="value" data-bind="etaText">—</span></div>
+          <div class="row"><span class="label">Next waypoint</span><span class="value" data-bind="nav.next">—</span></div>
+        </div>
+        <div class="kicker" id="home-extra-kicker">Arrival</div>
+        <div class="group" id="home-extra"></div>
+      </section>
+
+      <section class="screen" id="screen-flight">
+        <h1 class="screen-title">Flight</h1>
+        <div class="columns">
+          <div>
+            <div class="kicker">Flight information</div>
+            <div class="group">
+              <div class="row"><span class="label">Callsign</span><span class="value" data-bind="flight.callsign">—</span></div>
+              <div class="row"><span class="label">Flight number</span><span class="value" data-bind="flight.flightNumber">—</span></div>
+              <div class="row"><span class="label">Departure</span><span class="value" data-bind="flight.departure">—</span></div>
+              <div class="row"><span class="label">Arrival</span><span class="value" data-bind="flight.arrival">—</span></div>
+              <div class="row"><span class="label">Alternate</span><span class="value" data-bind="flight.alternate">—</span></div>
+              <div class="row"><span class="label">Aircraft</span><span class="value" data-bind="aircraft.title">—</span></div>
+              <div class="row"><span class="label">Registration</span><span class="value" data-bind="aircraft.registration">—</span></div>
+            </div>
+            <div class="kicker">Navigation</div>
+            <div class="group">
+              <div class="row"><span class="label">Active waypoint</span><span class="value" data-bind="nav.active">—</span></div>
+              <div class="row"><span class="label">Next waypoint</span><span class="value" data-bind="nav.next">—</span></div>
+              <div class="row"><span class="label">Distance to waypoint</span><span class="value" data-bind="nav.distanceText">—</span></div>
+              <div class="row"><span class="label">ETA</span><span class="value" data-bind="etaText">—</span></div>
+              <div class="row"><span class="label">Track</span><span class="value" data-bind="trackText">—</span></div>
+              <div class="row"><span class="label">Wind</span><span class="value" data-bind="windText">—</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="kicker">Live information</div>
+            <div class="group">
+              <div class="row"><span class="label">Latitude</span><span class="value" data-bind="latText">—</span></div>
+              <div class="row"><span class="label">Longitude</span><span class="value" data-bind="lonText">—</span></div>
+              <div class="row"><span class="label">Altitude</span><span class="value" data-bind="altitudeText">—</span></div>
+              <div class="row"><span class="label">IAS</span><span class="value" data-bind="iasText">—</span></div>
+              <div class="row"><span class="label">TAS</span><span class="value" data-bind="tasText">—</span></div>
+              <div class="row"><span class="label">Ground speed</span><span class="value" data-bind="gsText">—</span></div>
+              <div class="row"><span class="label">Heading</span><span class="value" data-bind="hdgText">—</span></div>
+              <div class="row"><span class="label">Vertical speed</span><span class="value" data-bind="vsText">—</span></div>
+              <div class="row"><span class="label">Mach</span><span class="value" data-bind="machText">—</span></div>
+              <div class="row"><span class="label">Fuel</span><span class="value" data-bind="fuelText">—</span></div>
+              <div class="row"><span class="label">Flight time</span><span class="value" data-bind="flightTimeText">—</span></div>
+              <div class="row"><span class="label">Distance remaining</span><span class="value" data-bind="distanceRemainingText">—</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-airport">
+        <h1 class="screen-title">Airport</h1>
+        <div class="seg" id="airport-seg"></div>
+        <div class="kicker">Airport</div>
+        <div class="group" id="airport-info"></div>
+        <div class="kicker">Runways</div>
+        <div class="group" id="runway-list"></div>
+        <div class="kicker">Frequencies</div>
+        <div class="group" id="freq-list"></div>
+      </section>
+
+      <section class="screen" id="screen-weather">
+        <h1 class="screen-title">Weather</h1>
+        <div class="seg" id="weather-seg"></div>
+        <div class="kicker">METAR</div>
+        <div class="group"><div class="raw" id="metar-raw"></div></div>
+        <div class="kicker">Decoded</div>
+        <div class="group" id="weather-decoded"></div>
+        <div class="kicker">TAF</div>
+        <div class="group"><div class="raw" id="taf-raw"></div></div>
+        <p class="note">ATIS is not decoded in this version. Surface wind is used for runway components.</p>
+      </section>
+
+      <section class="screen" id="screen-charts">
+        <h1 class="screen-title">Charts</h1>
+        <div class="toolbar">
+          <select id="chart-airport"></select>
+          <select id="chart-type">
+            <option>Airport</option>
+            <option>SID</option>
+            <option>STAR</option>
+            <option>Approach</option>
+            <option>Taxi</option>
+          </select>
+          <button class="tool-btn" id="zoom-out" type="button">−</button>
+          <button class="tool-btn" id="zoom-in" type="button">+</button>
+          <button class="tool-btn" id="rotate-chart" type="button">Rotate</button>
+          <button class="tool-btn" id="fav-chart" type="button">Favorite</button>
+          <button class="tool-btn" id="full-chart" type="button">Full screen</button>
+        </div>
+        <div class="chart-stage" id="chart-stage"><canvas id="chart-canvas"></canvas></div>
+        <p class="note">Schematic plates for the prototype. Not for navigation.</p>
+      </section>
+
+      <section class="screen" id="screen-performance">
+        <h1 class="screen-title">Performance</h1>
+        <div class="seg" id="perf-seg">
+          <button type="button" data-perf="takeoff" aria-pressed="true">Takeoff</button>
+          <button type="button" data-perf="landing" aria-pressed="false">Landing</button>
+        </div>
+        <div id="perf-form"></div>
+        <div class="results group" id="perf-results"></div>
+        <p class="disclaimer">Demonstration estimate from the aircraft profile. Not validated against the AFM or the Fenix documentation. Do not use for real flight.</p>
+      </section>
+
+      <section class="screen" id="screen-aircraft">
+        <h1 class="screen-title">Aircraft</h1>
+        <div class="route-block group" style="margin-bottom:12px">
+          <div class="route"><h2 data-bind="aircraft.title">Fenix A320</h2></div>
+          <div class="route-sub"><span data-bind="aircraft.registration">SE-ROA</span> · <span data-bind="aircraft.airline">Scandinavian</span></div>
+        </div>
+        <div id="aircraft-sections"></div>
+      </section>
+
+      <section class="screen" id="screen-documents">
+        <h1 class="screen-title">Documents</h1>
+        <div class="doc-layout">
+          <div>
+            <input class="search" id="doc-search" placeholder="Search" />
+            <div class="group doc-list" id="doc-list"></div>
+          </div>
+          <div class="group doc-reader" id="doc-reader"></div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-notes">
+        <h1 class="screen-title">Notes</h1>
+        <div class="notes-grid">
+          <label class="field"><span>ATC clearance</span><input id="note-clearance" /></label>
+          <label class="field"><span>ATIS</span><input id="note-atis" /></label>
+          <label class="field"><span>Squawk</span><input id="note-squawk" inputmode="numeric" /></label>
+          <label class="field"><span>Frequency</span><input id="note-freq" /></label>
+          <label class="field"><span>Gate</span><input id="note-gate" /></label>
+          <label class="field"><span>Runway</span><input id="note-runway" /></label>
+        </div>
+        <div class="kicker">Scratchpad</div>
+        <div class="group"><textarea class="scratch" id="scratch" placeholder="Frequencies, hold short, personal notes"></textarea></div>
+      </section>
+
+      <section class="screen" id="screen-traffic">
+        <h1 class="screen-title">Traffic</h1>
+        <p class="note">Public VATSIM feeds. No login. Matched to the current departure and arrival.</p>
+        <div class="kicker">You</div>
+        <div class="group" id="vat-own"></div>
+        <div class="kicker">ATC</div>
+        <div class="group" id="vat-atc"></div>
+        <div class="kicker">ATIS</div>
+        <div class="group" id="vat-atis"></div>
+        <div class="kicker">Events</div>
+        <div class="group" id="vat-events"></div>
+      </section>
+
+      <section class="screen" id="screen-settings">
+        <h1 class="screen-title">Settings</h1>
+        <div class="kicker">Appearance</div>
+        <div class="group">
+          <div class="row"><span class="label">Theme</span>
+            <select id="theme-select">
+              <option value="system">System</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </div>
+        </div>
+        <div class="kicker">Connection</div>
+        <div class="group">
+          <div class="row"><span class="label">Bridge</span><span class="value secondary" id="set-bridge">Not paired</span></div>
+          <div class="row"><span class="label">Protocol</span><span class="value secondary">1</span></div>
+          <div class="row"><span class="label">Forget this bridge</span><button class="tool-btn" id="forget" type="button">Forget</button></div>
+        </div>
+        <div class="kicker">Flight history</div>
+        <div class="group" id="history"></div>
+        <p class="note">Add to Home Screen in Safari for standalone display. The interface stays available if the bridge drops. Live figures are marked stale.</p>
+      </section>
+    </div>
+  </div>
+
+  <div class="connect" id="connect">
+    <div class="connect-card">
+      <h1>Rotaidem</h1>
+      <p>Flight Bag · MSFS 2024</p>
+      <p>Scan the QR code on the PC Bridge, or enter the pairing token shown beside it.</p>
+      <div class="token-row">
+        <input id="token-input" placeholder="Pairing token" autocapitalize="off" />
+        <button class="primary" id="pair-btn" type="button">Connect</button>
+      </div>
+      <p class="install">In Safari, use Share → Add to Home Screen. The EFB then opens without browser navigation.</p>
+    </div>
+  </div>
+  <script src="/app.js"></script>
+</body>
+</html>

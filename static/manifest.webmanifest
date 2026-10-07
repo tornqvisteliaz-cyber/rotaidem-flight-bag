@@ -1,0 +1,15 @@
+{
+  "name": "Rotaidem Flight Bag",
+  "short_name": "Rotaidem",
+  "description": "External electronic flight bag for Microsoft Flight Simulator 2024.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F2F2F7",
+  "theme_color": "#F2F2F7",
+  "icons": [
+    { "src": "/icon-180.png", "sizes": "180x180", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
