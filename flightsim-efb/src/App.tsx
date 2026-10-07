@@ -4,7 +4,7 @@ import { loadNotes, saveNotes } from "./notes";
 import type { Envelope } from "./protocol";
 
 const NAV = ["Home", "Flight", "Map", "Plan", "Airport", "Weather", "Charts", "Performance", "Checklists", "Documents", "Notes", "Logbook"] as const;
-type Screen = (typeof NAV)[number] | "Tools" | "VATSIM" | "SimBrief" | "Settings";
+type Screen = (typeof NAV)[number] | "Tools" | "VATSIM" | "SimBrief" | "Settings" | "Aircraft" | "License" | "Briefing" | "Notams" | "Fuel" | "Nearest";
 
 const AIRPORTS: Record<string, { name: string; city: string; elevation: number; runways: { id: string; heading: number; length: number; surface: string; approach: string }[]; freqs: [string, string][] }> = {
   ESSA: { name: "Arlanda", city: "Stockholm, Sweden", elevation: 137, runways: [{ id: "01L", heading: 10, length: 3301, surface: "Asphalt", approach: "ILS" }, { id: "19R", heading: 190, length: 3301, surface: "Asphalt", approach: "ILS" }, { id: "08", heading: 76, length: 2500, surface: "Asphalt", approach: "VOR" }, { id: "26", heading: 256, length: 2500, surface: "Asphalt", approach: "ILS" }], freqs: [["ATIS", "119.000"], ["Tower", "118.500"], ["Ground", "121.700"]] },
@@ -59,7 +59,7 @@ export default function App() {
   const [token, setToken] = useState(localStorage.getItem("efb-token") || "");
   const [paired, setPaired] = useState(Boolean(localStorage.getItem("efb-token")));
   const [theme, setTheme] = useState(localStorage.getItem("efb-theme") || "system");
-  const [sheet, setSheet] = useState("");
+  const [licensed, setLicensed] = useState(localStorage.getItem("efb-license") === "active");
 
   useEffect(() => {
     const fromQr = new URLSearchParams(location.search).get("pair");
@@ -115,7 +115,7 @@ export default function App() {
           ))}
         </nav>
         <div className="nav" style={{ marginTop: 12 }}>
-          {(["Tools", "VATSIM", "SimBrief", "Settings"] as const).map((item) => (
+          {(["Tools", "Aircraft", "VATSIM", "SimBrief", "License", "Settings"] as const).map((item) => (
             <button key={item} type="button" aria-current={screen === item ? "page" : undefined} aria-label={item} onClick={() => setScreen(item)}>
               <Icon name={item} /><span>{item}</span>
             </button>
@@ -135,15 +135,21 @@ export default function App() {
           {screen === "Plan" && <PlanView />}
           {screen === "Airport" && <Airport weather={weather} />}
           {screen === "Weather" && <Weather />}
-          {screen === "Charts" && <Charts />}
+          {screen === "Charts" && (licensed ? <Charts /> : <Locked onOpen={() => setScreen("License")} />)}
           {screen === "Performance" && <Performance />}
           {screen === "Checklists" && <Checklists />}
-          {screen === "Documents" && <Documents />}
+          {screen === "Documents" && (licensed ? <Documents /> : <Locked onOpen={() => setScreen("License")} />)}
           {screen === "Notes" && <Notes />}
           {screen === "Logbook" && <Logbook />}
           {screen === "Tools" && <Tools />}
+          {screen === "Aircraft" && <Aircraft />}
           {screen === "VATSIM" && <Vatsim />}
           {screen === "SimBrief" && <SimBrief />}
+          {screen === "Briefing" && <Briefing />}
+          {screen === "Notams" && <Notams />}
+          {screen === "Fuel" && <Fuel />}
+          {screen === "Nearest" && <Nearest onOpen={setScreen} />}
+          {screen === "License" && <License licensed={licensed} onActivate={() => { localStorage.setItem("efb-license", "active"); setLicensed(true); }} />}
           {screen === "Settings" && <Settings theme={theme} setTheme={setTheme} link={link} onForget={() => { localStorage.removeItem("efb-token"); setPaired(false); }} onSheet={setSheet} />}
         </main>
       </div>
@@ -313,6 +319,9 @@ function Home({ onOpen }: { onOpen: (screen: Screen) => void }) {
             <Row label="QNH" value={dest?.qnh || "—"} />
           </div>
           <button className="primary" style={{ marginTop: 12 }} type="button" onClick={() => onOpen(descent ? "Airport" : "Weather")}>{descent ? "Open arrival" : "Open weather"}</button>
+          <div className="seg" style={{ marginTop: 16 }}>
+            {(["Briefing", "Fuel", "Nearest", "Notams"] as const).map((item) => <button key={item} type="button" onClick={() => onOpen(item)}>{item}</button>)}
+          </div>
         </div>
       </div>
       <div className="progress">
@@ -518,6 +527,79 @@ function Performance() {
         </div>
       </div>
     </>
+  );
+}
+
+function Locked({ onOpen }: { onOpen: () => void }) {
+  return (
+    <>
+      <p className="route">License required</p>
+      <p className="note">Charts and manuals stay on this iPad and are watermarked with the paired device. No copyrighted plates are included.</p>
+      <button className="primary" type="button" onClick={onOpen}>Open license</button>
+    </>
+  );
+}
+
+function License({ licensed, onActivate }: { licensed: boolean; onActivate: () => void }) {
+  const device = localStorage.getItem("efb-token")?.slice(0, 8) || "unpaired";
+  return (
+    <>
+      <div className="group">
+        <Row label="Device" value={device} />
+        <Row label="Charts" value={licensed ? "Unlocked on this iPad" : "Locked"} />
+        <Row label="Manuals" value={licensed ? "Watermarked" : "Locked"} />
+      </div>
+      <p className="note">A license only unlocks content you add yourself. It does not download Navigraph, Jeppesen, or airline manuals.</p>
+      {!licensed && <button className="primary" type="button" onClick={onActivate}>Activate this iPad</button>}
+    </>
+  );
+}
+
+function Briefing() {
+  const { flight, weather } = useStore();
+  const dest = weather[flight.flight.arrival];
+  return (
+    <>
+      <p className="route">{flight.flight.flightNumber}</p>
+      <p className="meta">{flight.flight.departure} → {flight.flight.arrival} · {flight.aircraft.title}</p>
+      <div className="group">
+        <Row label="Phase" value={flight.phase} />
+        <Row label="Cruise" value={altitudeText(flight.position.altitude)} />
+        <Row label="Destination weather" value={dest ? dest.wind + " · " + dest.temperature : "Waiting"} />
+        <Row label="Fuel" value={fuelText(flight.fuel.total)} />
+      </div>
+    </>
+  );
+}
+
+function Notams() {
+  return (
+    <>
+      <p className="route">No NOTAM feed</p>
+      <p className="note">Airport, runway, and procedure notices appear here when a licensed data source is connected. Nothing is invented.</p>
+    </>
+  );
+}
+
+function Fuel() {
+  const { flight, plan } = useStore();
+  return (
+    <div className="group">
+      <Row label="Block" value={plan ? plan.fuel.block + " KG" : "—"} />
+      <Row label="Trip" value={plan ? plan.fuel.trip + " KG" : "—"} />
+      <Row label="Actual remaining" value={fuelText(flight.fuel.total)} />
+      <Row label="Reserve" value={plan ? plan.fuel.reserve + " KG" : "—"} />
+    </div>
+  );
+}
+
+function Nearest({ onOpen }: { onOpen: (screen: Screen) => void }) {
+  const { flight } = useStore();
+  return (
+    <div className="group">
+      <button className="list-row" type="button" onClick={() => onOpen("Airport")}><span>{flight.flight.arrival}</span><span className="meta">Destination</span></button>
+      <button className="list-row" type="button" onClick={() => onOpen("Airport")}><span>{flight.flight.alternate}</span><span className="meta">Alternate</span></button>
+    </div>
   );
 }
 
