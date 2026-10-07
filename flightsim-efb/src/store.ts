@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { emptyFlight, type Envelope, type FlightState, type Plan, type VatStation, type WeatherReport } from "./protocol";
+import { emptyFlight, type Envelope, type Plan, type VatStation, type WeatherReport } from "./protocol";
 
 type Listener = () => void;
 
@@ -28,7 +28,9 @@ export function snapshot() {
 
 export function useStore() {
   const [, setTick] = useState(0);
-  useEffect(() => subscribe(() => setTick((n) => n + 1)), []);
+  useEffect(() => {
+    return subscribe(() => setTick((n) => n + 1));
+  }, []);
   return snapshot();
 }
 
