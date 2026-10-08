@@ -163,6 +163,28 @@ button { background: none; border: 0; padding: 0; }
 .results { display: flex; gap: 28px; }
 .results strong { display: block; font-size: 30px; font-variant-numeric: tabular-nums; }
 .results span { font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--secondary); }
+.launcher { height: 100%; display: flex; background: linear-gradient(160deg, #8eb7d8 0%, #d5ebe8 42%, #9fd0c8 100%); color: #1c1c1e; }
+.launcher .column { flex: 1; }
+.launcher .screen { padding: 0; background: transparent; }
+.launcher-top { display: flex; justify-content: space-between; padding: 16px 22px 6px; font-size: 14px; font-weight: 600; }
+.widget-row { display: grid; grid-template-columns: 158px 158px minmax(200px, 1.1fr) minmax(220px, 1fr); gap: 14px; padding: 6px 22px 16px; }
+.widget { border-radius: 22px; background: rgba(255, 255, 255, 0.78); padding: 14px; min-height: 148px; text-align: left; }
+.widget strong { display: block; font-size: 32px; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+.widget em { font-style: normal; font-size: 13px; color: rgba(28, 28, 30, 0.62); }
+.clock-face { width: 88px; height: 88px; margin: 8px auto 0; border-radius: 50%; border: 7px solid #f3efe4; background: white; position: relative; }
+.clock-face i, .clock-face b { position: absolute; left: 50%; top: 50%; width: 2px; background: #1c1c1e; transform-origin: bottom center; }
+.clock-face i { height: 28px; margin-top: -28px; }
+.clock-face b { height: 18px; margin-top: -18px; }
+.route-widget { background: #243246; color: white; }
+.route-widget em { color: rgba(255, 255, 255, 0.72); }
+.schedule { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.schedule span { font-size: 12px; padding: 7px 8px; border-radius: 8px; background: rgba(29, 79, 145, 0.1); }
+.icon-grid { display: grid; grid-template-columns: repeat(6, 76px); gap: 16px 20px; justify-content: center; padding: 6px 22px 12px; }
+.icon-grid button, .dock button { display: grid; justify-items: center; gap: 6px; font-size: 12px; color: #1c1c1e; }
+.app-icon { width: 58px; height: 58px; border-radius: 14px; display: grid; place-items: center; }
+.app-icon svg { width: 26px; height: 26px; stroke: white; fill: none; stroke-width: 1.7; }
+.dock { margin: 8px 18px 16px; display: flex; justify-content: center; gap: 22px; padding: 12px 18px; border-radius: 28px; background: rgba(255, 255, 255, 0.5); }
+.back-home { min-height: 44px; color: var(--accent); font-weight: 650; }
 @media (max-width: 900px) {
   :root { --sidebar-width: 68px; }
   .brand strong, .brand span, .nav button span, .flight-id { display: none; }

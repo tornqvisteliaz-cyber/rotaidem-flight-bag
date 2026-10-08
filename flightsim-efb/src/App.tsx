@@ -100,12 +100,13 @@ export default function App() {
   const pip = link !== "CONNECTED" ? "bad" : msfs === "CONNECTED" ? "on" : "wait";
   const utc = new Date().toISOString().slice(11, 16);
 
+  const home = screen === "Home";
   return (
-    <div className="app">
+    <div className={home ? "launcher" : "app"}>
+      {!home && (
       <aside className="sidebar">
         <div className="brand">
-          <div className="mark" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M3 10h10M8 3v10" stroke="#c4b08a" strokeWidth="1.6" /></svg></div>
-          <div><strong>FlightSim EFB</strong><span>v1.0</span></div>
+          <button className="back-home" type="button" onClick={() => setScreen("Home")}>Home</button>
         </div>
         <nav className="nav">
           {NAV.map((item) => (
@@ -122,14 +123,17 @@ export default function App() {
           ))}
         </div>
       </aside>
+      )}
       <div className="column">
+        {!home && (
         <header className="toolbar">
           <h1>{screen}</h1>
           <div className="flight-id">{flight.flight.flightNumber}<span>{flight.flight.departure} → {flight.flight.arrival}</span></div>
           <div className="status-pill"><i className={"pip " + pip} />{status}</div>
         </header>
+        )}
         <main className="screen">
-          {screen === "Home" && <Home onOpen={setScreen} />}
+          {home && <Home onOpen={setScreen} utc={utc} status={status} />}
           {screen === "Flight" && <Flight />}
           {screen === "Map" && <MapView />}
           {screen === "Plan" && <PlanView />}
@@ -153,7 +157,7 @@ export default function App() {
           {screen === "Settings" && <Settings theme={theme} setTheme={setTheme} link={link} onForget={() => { localStorage.removeItem("efb-token"); setPaired(false); }} onSheet={setSheet} />}
         </main>
       </div>
-      <footer className="statusbar">{status} · {flight.aircraft.title} · {utc} UTC{link !== "CONNECTED" ? " · Last values kept" : ""}</footer>
+      {!home && <footer className="statusbar">{status} · {flight.aircraft.title} · {utc} UTC{link !== "CONNECTED" ? " · Last values kept" : ""}</footer>}
       <div className={"connect" + (paired ? "" : " show")}>
         <div className="connect-card">
           <h1>FlightSim EFB</h1>
@@ -289,41 +293,61 @@ function SimBrief() {
   );
 }
 
-function Home({ onOpen }: { onOpen: (screen: Screen) => void }) {
+const ICONS: Record<string, string> = { Flight: "#34c759", Map: "#5ac8fa", Plan: "#ff9500", Airport: "#007aff", Weather: "#64d2ff", Charts: "#ff3b30", Performance: "#af52de", Checklists: "#ffcc00", Documents: "#8e8e93", Notes: "#ffd60a", Logbook: "#ff2d55", Tools: "#636366", Aircraft: "#1c1c1e" };
+
+function Home({ onOpen, utc, status }: { onOpen: (screen: Screen) => void; utc: string; status: string }) {
   const { flight, weather } = useStore();
   const dest = weather[flight.flight.arrival];
-  const descent = ["DESCENT", "APPROACH", "LANDING"].includes(flight.phase);
+  const hour = Number(utc.slice(0, 2));
+  const minute = Number(utc.slice(3, 5));
+  const apps = ["Flight", "Map", "Plan", "Airport", "Weather", "Charts", "Performance", "Checklists", "Documents", "Notes", "Logbook", "Aircraft"] as const;
   return (
     <>
-      <div className="identity">
-        <div>
-          <p className="meta">{flight.flight.flightNumber}</p>
-          <p className="route">{flight.flight.departure} → {flight.flight.arrival}</p>
-        </div>
-        <em>{flight.aircraft.title}</em>
-      </div>
-      <div className="board">
-        <section>
-          <p className="phase">{flight.phase.replace(/_/g, " ")}</p>
-          <div className="figures">
-            <div><strong>{altitudeText(flight.position.altitude)}</strong><span>Altitude</span></div>
-            <div><strong>{Math.round(flight.speed.groundSpeed) || "—"}</strong><span>KT</span></div>
-            <div><strong>{String(Math.round(flight.position.heading)).padStart(3, "0")}°</strong><span>Heading</span></div>
+      <div className="launcher-top"><span>{utc} UTC</span><span>{status}</span></div>
+      <div className="widget-row">
+        <button className="widget" type="button" onClick={() => onOpen("Flight")}>
+          <em>UTC</em>
+          <div className="clock-face" aria-hidden="true">
+            <i style={{ transform: `rotate(${minute * 6}deg)` }} />
+            <b style={{ transform: `rotate(${(hour % 12) * 30 + minute / 2}deg)` }} />
           </div>
-        </section>
-        <section>
-          <p className="phase">{descent ? "Arrival" : "Destination"}</p>
-          <p className="route">{flight.flight.arrival}</p>
-          <p className="meta">{dest ? dest.temperature : "Weather waiting"}</p>
-          <p className="meta">{dest ? dest.wind : "—"}</p>
-          <p className="meta">{dest?.qnh || "QNH —"}</p>
-          <button className="primary" type="button" onClick={() => onOpen(descent ? "Airport" : "Weather")}>{descent ? "Open arrival" : "Open weather"}</button>
-        </section>
+        </button>
+        <button className="widget" type="button" onClick={() => onOpen("Weather")}>
+          <em>{flight.flight.arrival}</em>
+          <strong>{dest?.temperature || "—"}</strong>
+          <em>{dest?.wind || "Waiting"}</em>
+        </button>
+        <button className="widget route-widget" type="button" onClick={() => onOpen("Map")}>
+          <em>{flight.flight.flightNumber}</em>
+          <strong>{flight.flight.departure}</strong>
+          <em>to {flight.flight.arrival}</em>
+          <em>{flight.phase.replace(/_/g, " ")} · {altitudeText(flight.position.altitude)}</em>
+        </button>
+        <button className="widget" type="button" onClick={() => onOpen("Plan")}>
+          <em>Today</em>
+          <div className="schedule">
+            <span>Next {flight.nav.next}</span>
+            <span>{Math.round(flight.nav.distanceNm)} NM</span>
+            <span>ETA {flight.eta}</span>
+            <span>{fuelText(flight.fuel.total)}</span>
+          </div>
+        </button>
       </div>
-      <div className="progress">
-        <div className="ends"><span>Next waypoint</span><span>{flight.nav.next}</span><span>{Math.round(flight.nav.distanceNm)} NM</span></div>
-        <div className="track"><i style={{ left: Math.round(flight.progress * 100) + "%" }} /></div>
-        <div className="ends"><span>{flight.flight.departure}</span><span>{Math.round(flight.distanceRemainingNm)} NM remaining</span><span>{flight.flight.arrival}</span></div>
+      <div className="icon-grid">
+        {apps.map((item) => (
+          <button key={item} type="button" onClick={() => onOpen(item)}>
+            <span className="app-icon" style={{ background: ICONS[item] }}><Icon name={item} /></span>
+            {item}
+          </button>
+        ))}
+      </div>
+      <div className="dock">
+        {(["Flight", "Weather", "Charts", "Notes"] as const).map((item) => (
+          <button key={item} type="button" onClick={() => onOpen(item)}>
+            <span className="app-icon" style={{ background: ICONS[item] }}><Icon name={item} /></span>
+            {item}
+          </button>
+        ))}
       </div>
     </>
   );
