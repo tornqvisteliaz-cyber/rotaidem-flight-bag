@@ -114,7 +114,7 @@ export default function App() {
             </button>
           ))}
         </nav>
-        <div className="nav" style={{ marginTop: 12 }}>
+        <div className="nav secondary">
           {(["Tools", "Aircraft", "VATSIM", "SimBrief", "License", "Settings"] as const).map((item) => (
             <button key={item} type="button" aria-current={screen === item ? "page" : undefined} aria-label={item} onClick={() => setScreen(item)}>
               <Icon name={item} /><span>{item}</span>
@@ -295,39 +295,35 @@ function Home({ onOpen }: { onOpen: (screen: Screen) => void }) {
   const descent = ["DESCENT", "APPROACH", "LANDING"].includes(flight.phase);
   return (
     <>
-      <p className="meta">{flight.flight.flightNumber} · {flight.aircraft.title}</p>
-      <p className="route">{flight.flight.departure} → {flight.flight.arrival}</p>
-      <p className="phase">{flight.phase.replace("_", " ")}</p>
-      <div className="split" style={{ marginTop: 16 }}>
+      <div className="identity">
         <div>
+          <p className="meta">{flight.flight.flightNumber}</p>
+          <p className="route">{flight.flight.departure} → {flight.flight.arrival}</p>
+        </div>
+        <em>{flight.aircraft.title}</em>
+      </div>
+      <div className="board">
+        <section>
+          <p className="phase">{flight.phase.replace(/_/g, " ")}</p>
           <div className="figures">
             <div><strong>{altitudeText(flight.position.altitude)}</strong><span>Altitude</span></div>
-            <div><strong>{Math.round(flight.speed.groundSpeed) || "—"} KT</strong><span>Ground speed</span></div>
+            <div><strong>{Math.round(flight.speed.groundSpeed) || "—"}</strong><span>KT</span></div>
             <div><strong>{String(Math.round(flight.position.heading)).padStart(3, "0")}°</strong><span>Heading</span></div>
           </div>
-          <div className="group" style={{ marginTop: 12 }}>
-            <Row label="Fuel" value={fuelText(flight.fuel.total)} />
-            <Row label="ETA" value={flight.eta + " UTC"} />
-            <Row label="Next" value={flight.nav.next + "  " + Math.round(flight.nav.distanceNm) + " NM"} />
-          </div>
-        </div>
-        <div>
-          <div className="kicker">{descent ? "Arrival" : "Destination"}</div>
-          <div className="group">
-            <Row label="Airport" value={flight.flight.arrival} />
-            <Row label="Weather" value={dest ? dest.temperature + " · " + dest.wind : "Waiting"} />
-            <Row label="QNH" value={dest?.qnh || "—"} />
-          </div>
-          <button className="primary" style={{ marginTop: 12 }} type="button" onClick={() => onOpen(descent ? "Airport" : "Weather")}>{descent ? "Open arrival" : "Open weather"}</button>
-          <div className="seg" style={{ marginTop: 16 }}>
-            {(["Briefing", "Fuel", "Nearest", "Notams"] as const).map((item) => <button key={item} type="button" onClick={() => onOpen(item)}>{item}</button>)}
-          </div>
-        </div>
+        </section>
+        <section>
+          <p className="phase">{descent ? "Arrival" : "Destination"}</p>
+          <p className="route">{flight.flight.arrival}</p>
+          <p className="meta">{dest ? dest.temperature : "Weather waiting"}</p>
+          <p className="meta">{dest ? dest.wind : "—"}</p>
+          <p className="meta">{dest?.qnh || "QNH —"}</p>
+          <button className="primary" type="button" onClick={() => onOpen(descent ? "Airport" : "Weather")}>{descent ? "Open arrival" : "Open weather"}</button>
+        </section>
       </div>
       <div className="progress">
-        <div className="ends"><span>{flight.flight.departure}</span><span>{Math.round(flight.progress * 100)}%</span><span>{flight.flight.arrival}</span></div>
+        <div className="ends"><span>Next waypoint</span><span>{flight.nav.next}</span><span>{Math.round(flight.nav.distanceNm)} NM</span></div>
         <div className="track"><i style={{ left: Math.round(flight.progress * 100) + "%" }} /></div>
-        <div className="ends"><span>Next {flight.nav.next}</span><span>{Math.round(flight.distanceRemainingNm)} NM</span></div>
+        <div className="ends"><span>{flight.flight.departure}</span><span>{Math.round(flight.distanceRemainingNm)} NM remaining</span><span>{flight.flight.arrival}</span></div>
       </div>
     </>
   );
